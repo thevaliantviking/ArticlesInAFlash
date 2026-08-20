@@ -1,0 +1,13 @@
+{
+  "name": "Load Calc Drill - VA & Load Calculations",
+  "short_name": "Load Calc",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#12181A",
+  "theme_color": "#12181A",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

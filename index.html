@@ -3,23 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Load Calc Drill</title>
+<title>Articles in a Flash</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1B1F1D">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
   :root{
-    --panel-bg:#12181a;
-    --card-bg:#1a2426;
-    --card-bg-2:#202c2e;
-    --copper:#2fb8b0;
-    --copper-bright:#4fd6cd;
+    --panel-bg:#15181a;
+    --card-bg:#20241f;
+    --card-bg-2:#262b26;
+    --copper:#c97c3d;
+    --copper-bright:#e0954f;
     --amber:#e8a93b;
-    --circuit-green:#5b9e6a;
+    --circuit-green:#5b8c5a;
     --fault-red:#c2543a;
-    --insulation:#e7f1f0;
-    --insulation-dim:#93a6a5;
-    --line:#2c3a3c;
+    --insulation:#ede7da;
+    --insulation-dim:#a9a397;
+    --line:#3a4038;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{
@@ -35,13 +35,16 @@
     flex-direction:column;
     min-height:100vh;
     background-image:
-      radial-gradient(circle at 10% 0%, rgba(47,184,176,0.07), transparent 40%),
-      radial-gradient(circle at 90% 100%, rgba(91,158,106,0.05), transparent 40%);
+      radial-gradient(circle at 10% 0%, rgba(201,124,61,0.06), transparent 40%),
+      radial-gradient(circle at 90% 100%, rgba(91,140,90,0.05), transparent 40%);
   }
+
+  /* ── Topbar ── */
   .topbar{
     padding:18px 18px 10px 18px;
     border-bottom:1px solid var(--line);
   }
+  .topbar.hidden{ display:none; }
   .brand{
     display:flex;
     align-items:center;
@@ -70,7 +73,6 @@
     color:var(--insulation-dim);
     letter-spacing:1px;
   }
-
   .quit-btn{
     background:transparent;
     border:1px solid var(--line);
@@ -86,7 +88,6 @@
   }
   .quit-btn:active{ background:var(--card-bg); }
 
-  /* Breaker panel progress row -- signature element */
   .breaker-row{
     display:flex;
     flex-wrap:wrap;
@@ -101,13 +102,8 @@
     box-shadow: inset 0 0 0 1px rgba(0,0,0,0.4);
     transition: background 0.25s ease, transform 0.15s ease;
   }
-  .breaker.done{
-    background:var(--copper);
-  }
-  .breaker.current{
-    background:var(--amber);
-    transform:translateY(-2px);
-  }
+  .breaker.done{ background:var(--copper); }
+  .breaker.current{ background:var(--amber); transform:translateY(-2px); }
 
   .stats-line{
     display:flex;
@@ -119,6 +115,73 @@
   }
   .stats-line b{ color:var(--insulation); }
 
+  /* ── Title Screen ── */
+  .title-screen{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:30px 24px;
+    text-align:center;
+  }
+  .title-screen.hidden{ display:none; }
+  .title-logo{
+    font-family:"Arial Black",Impact,"Segoe UI",sans-serif;
+    font-weight:900;
+    font-size:32px;
+    letter-spacing:2px;
+    color:var(--copper-bright);
+    text-transform:uppercase;
+    margin-bottom:4px;
+  }
+  .title-sub{
+    font-family:"SF Mono",Consolas,monospace;
+    font-size:12px;
+    color:var(--insulation-dim);
+    letter-spacing:1.5px;
+    margin-bottom:40px;
+  }
+  .mode-label{
+    font-family:"SF Mono",Consolas,monospace;
+    font-size:11px;
+    color:var(--copper);
+    letter-spacing:1.5px;
+    margin-bottom:14px;
+  }
+  .mode-btn{
+    display:block;
+    width:100%;
+    max-width:300px;
+    background:var(--card-bg);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px 20px;
+    color:var(--insulation);
+    font-size:17px;
+    font-weight:600;
+    font-family:inherit;
+    cursor:pointer;
+    margin-bottom:10px;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.08s ease;
+  }
+  .mode-btn:active{ transform:scale(0.97); }
+  .mode-btn:hover{ border-color:var(--copper); }
+  .mode-hint{
+    font-family:"SF Mono",Consolas,monospace;
+    font-size:10px;
+    color:var(--insulation-dim);
+    margin-top:2px;
+    font-weight:400;
+  }
+  .title-count{
+    margin-top:30px;
+    font-family:"SF Mono",Consolas,monospace;
+    font-size:11px;
+    color:var(--insulation-dim);
+  }
+
+  /* ── Flashcard Screen ── */
   main{
     flex:1;
     display:flex;
@@ -128,167 +191,178 @@
     width:100%;
     margin:0 auto;
   }
+  main.hidden{ display:none; }
 
-  .qnum{
+  .card-num{
     font-family:"SF Mono",Consolas,monospace;
     font-size:12px;
     color:var(--copper);
     letter-spacing:1px;
     margin-bottom:10px;
   }
-  .qtext{
-    font-size:19px;
-    line-height:1.4;
-    font-weight:600;
-    color:var(--insulation);
-    margin-bottom:22px;
+  .card-type-label{
+    font-family:"SF Mono",Consolas,monospace;
+    font-size:10px;
+    letter-spacing:1.5px;
+    color:var(--insulation-dim);
+    margin-bottom:8px;
   }
 
-  .choices{
+  /* Flip card container */
+  .flip-container{
+    perspective:800px;
+    margin-bottom:20px;
+    cursor:pointer;
+  }
+  .flip-card{
+    position:relative;
+    width:100%;
+    min-height:180px;
+    transition: transform 0.5s ease;
+    transform-style:preserve-3d;
+  }
+  .flip-card.flipped{
+    transform:rotateX(180deg);
+  }
+  .flip-face{
+    position:absolute;
+    top:0; left:0; right:0;
+    min-height:180px;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
     display:flex;
     flex-direction:column;
-    gap:10px;
-  }
-  .choice-btn{
-    display:flex;
     align-items:center;
-    gap:12px;
-    text-align:left;
+    justify-content:center;
+    padding:28px 24px;
+    border-radius:14px;
+    text-align:center;
+  }
+  .flip-front{
     background:var(--card-bg);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:14px 16px;
-    color:var(--insulation);
-    font-size:16px;
-    font-family:inherit;
-    cursor:pointer;
-    transition: border-color 0.15s ease, background 0.15s ease, transform 0.08s ease;
+    border:2px solid var(--line);
   }
-  .choice-btn:active{ transform:scale(0.98); }
-  .choice-btn .letter{
-    font-family:"SF Mono",Consolas,monospace;
+  .flip-back{
+    background:var(--card-bg-2);
+    border:2px solid var(--copper);
+    transform:rotateX(180deg);
+  }
+  .flip-text{
+    font-size:22px;
     font-weight:700;
-    color:var(--copper);
-    min-width:18px;
+    line-height:1.35;
+    color:var(--insulation);
   }
-  .choice-btn.correct{
-    background:rgba(91,158,106,0.18);
-    border-color:var(--circuit-green);
+  .flip-back .flip-text{
+    color:var(--copper-bright);
   }
-  .choice-btn.correct .letter{ color:var(--circuit-green); }
-  .choice-btn.incorrect{
-    background:rgba(194,84,58,0.18);
-    border-color:var(--fault-red);
-  }
-  .choice-btn.incorrect .letter{ color:var(--fault-red); }
-  .choice-btn:disabled{ cursor:default; }
-
-  .feedback{
-    margin-top:16px;
-    min-height:24px;
+  .flip-hint{
     font-family:"SF Mono",Consolas,monospace;
-    font-size:13px;
-    letter-spacing:0.3px;
+    font-size:10px;
+    letter-spacing:1px;
+    color:var(--insulation-dim);
+    margin-top:14px;
   }
-  .feedback.correct{ color:var(--circuit-green); }
-  .feedback.incorrect{ color:var(--fault-red); }
+  .flip-back .flip-hint{
+    color:var(--insulation-dim);
+  }
 
-  .next-btn{
-    margin-top:20px;
-    align-self:flex-start;
-    background:var(--copper);
-    color:#1B1F1D;
-    border:none;
-    border-radius:8px;
-    padding:12px 22px;
+  .card-actions{
+    display:flex;
+    gap:10px;
+    margin-top:6px;
+  }
+  .card-actions.hidden{ display:none; }
+  .card-action-btn{
+    flex:1;
+    padding:14px 12px;
+    border-radius:10px;
     font-weight:700;
     font-size:15px;
     letter-spacing:0.5px;
     cursor:pointer;
-    display:none;
+    font-family:inherit;
+    transition: transform 0.08s ease;
   }
-  .next-btn.show{ display:inline-block; }
+  .card-action-btn:active{ transform:scale(0.97); }
+  .btn-knew{
+    background:var(--circuit-green);
+    color:#1B1F1D;
+    border:none;
+  }
+  .btn-missed{
+    background:var(--fault-red);
+    color:#fff;
+    border:none;
+  }
 
-  /* Summary screen */
-  .summary{
-    display:none;
+  /* ── Complete Screen ── */
+  .complete-screen{
     flex:1;
+    display:flex;
     flex-direction:column;
     align-items:center;
     justify-content:center;
     text-align:center;
-    padding:20px;
+    padding:30px 24px;
   }
-  .summary.show{ display:flex; }
-
-  .gauge-wrap{ position:relative; width:200px; height:200px; margin-bottom:8px; }
-  .gauge-pct{
-    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-    font-family:"SF Mono",Consolas,monospace;
-    font-size:34px;
-    font-weight:700;
+  .complete-screen.hidden{ display:none; }
+  .complete-icon{
+    font-size:56px;
+    margin-bottom:12px;
+  }
+  .complete-heading{
+    font-family:"Arial Black",Impact,"Segoe UI",sans-serif;
+    font-weight:900;
+    font-size:28px;
+    letter-spacing:1px;
     color:var(--copper-bright);
-  }
-  .gauge-label{
-    position:absolute; top:65%; left:50%; transform:translate(-50%,-50%);
-    font-size:11px;
-    color:var(--insulation-dim);
-    letter-spacing:1px;
-  }
-
-  .summary h2{
-    font-family:"Arial Black",Impact,sans-serif;
-    font-size:20px;
-    letter-spacing:1px;
-    margin:14px 0 4px 0;
-    color:var(--insulation);
     text-transform:uppercase;
+    margin-bottom:8px;
   }
-  .summary p.verdict{
+  .complete-sub{
+    font-family:"SF Mono",Consolas,monospace;
+    font-size:13px;
     color:var(--insulation-dim);
-    font-size:14px;
-    max-width:320px;
-    margin:0 0 24px 0;
+    margin-bottom:6px;
+    line-height:1.5;
   }
-  .summary-stats{
+  .complete-stats{
     display:flex;
     gap:24px;
-    margin-bottom:30px;
+    margin:24px 0 30px 0;
   }
-  .summary-stats div{
-    font-family:"SF Mono",Consolas,monospace;
+  .cstat{
     text-align:center;
   }
-  .summary-stats .num{
-    font-size:22px;
+  .cstat-num{
+    font-family:"SF Mono",Consolas,monospace;
+    font-size:28px;
     font-weight:700;
   }
-  .summary-stats .lbl{
+  .cstat-num.g{ color:var(--circuit-green); }
+  .cstat-num.r{ color:var(--fault-red); }
+  .cstat-label{
+    font-family:"SF Mono",Consolas,monospace;
     font-size:10px;
-    color:var(--insulation-dim);
     letter-spacing:1px;
-    margin-top:2px;
+    color:var(--insulation-dim);
+    margin-top:4px;
   }
-  .num.g{ color:var(--circuit-green); }
-  .num.r{ color:var(--fault-red); }
-
-  .again-row{ display:flex; gap:12px; }
-  .again-btn{
-    border:1px solid var(--line);
-    background:var(--card-bg);
-    color:var(--insulation);
-    padding:13px 26px;
-    border-radius:8px;
-    font-weight:700;
-    font-size:14px;
-    letter-spacing:0.5px;
-    cursor:pointer;
-  }
-  .again-btn.primary{
+  .home-btn{
     background:var(--copper);
     color:#1B1F1D;
     border:none;
+    border-radius:8px;
+    padding:14px 32px;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.5px;
+    cursor:pointer;
+    font-family:inherit;
+    transition: transform 0.08s ease;
   }
+  .home-btn:active{ transform:scale(0.97); }
 
   .footer-note{
     text-align:center;
@@ -301,107 +375,138 @@
 </head>
 <body>
 
-<div class="topbar">
+<!-- ── Topbar (hidden on title) ── -->
+<div class="topbar hidden" id="topbar">
   <div class="brand">
     <div class="brand-left">
-      <h1>Load Calc Drill</h1>
-      <span class="tag">VA &amp; LOAD CALCULATIONS</span>
+      <h1>Articles in a Flash</h1>
+      <span class="tag" id="modeTag">SUBJECTS</span>
     </div>
     <button class="quit-btn" id="quitBtn">QUIT</button>
   </div>
   <div class="breaker-row" id="breakerRow"></div>
   <div class="stats-line">
-    <span>CORRECT <b id="statCorrect">0</b></span>
-    <span>MISSED <b id="statIncorrect">0</b></span>
-    <span>LEFT <b id="statRemaining">0</b></span>
+    <span>KNEW IT <b id="statKnew">0</b></span>
+    <span>MISSED <b id="statMissed">0</b></span>
+    <span>LEFT <b id="statLeft">0</b></span>
   </div>
 </div>
 
-<main id="quizScreen">
-  <div class="qnum" id="qnum">QUESTION 1</div>
-  <div class="qtext" id="qtext">Loading...</div>
-  <div class="choices" id="choices"></div>
-  <div class="feedback" id="feedback"></div>
-  <button class="next-btn" id="nextBtn">NEXT QUESTION &rarr;</button>
+<!-- ── Title Screen ── -->
+<div class="title-screen" id="titleScreen">
+  <div class="title-logo">Articles in a Flash</div>
+  <div class="title-sub">NEC ARTICLE FLASHCARDS</div>
+  <div class="mode-label">SELECT MODE</div>
+  <button class="mode-btn" onclick="startRound('subjects')">
+    Subjects
+    <div class="mode-hint">See the subject — name the article</div>
+  </button>
+  <button class="mode-btn" onclick="startRound('articles')">
+    Articles
+    <div class="mode-hint">See the article — name the subject</div>
+  </button>
+  <button class="mode-btn" onclick="startRound('mixed')">
+    Mixed
+    <div class="mode-hint">Random side shown first</div>
+  </button>
+  <div class="title-count" id="titleCount"></div>
+</div>
+
+<!-- ── Flashcard Screen ── -->
+<main class="hidden" id="cardScreen">
+  <div class="card-num" id="cardNum">CARD 1 OF 65</div>
+  <div class="card-type-label" id="cardTypeLabel">SUBJECT</div>
+  <div class="flip-container" id="flipContainer">
+    <div class="flip-card" id="flipCard">
+      <div class="flip-face flip-front">
+        <div class="flip-text" id="frontText">Loading...</div>
+        <div class="flip-hint">TAP TO FLIP</div>
+      </div>
+      <div class="flip-face flip-back">
+        <div class="flip-text" id="backText">...</div>
+        <div class="flip-hint">DID YOU KNOW IT?</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-actions hidden" id="cardActions">
+    <button class="card-action-btn btn-knew" id="btnKnew">KNEW IT</button>
+    <button class="card-action-btn btn-missed" id="btnMissed">MISSED IT</button>
+  </div>
 </main>
 
-<div class="summary" id="summaryScreen">
-  <div class="gauge-wrap">
-    <svg width="200" height="200" viewBox="0 0 200 200">
-      <circle cx="100" cy="100" r="86" fill="none" stroke="#3a4038" stroke-width="14"/>
-      <circle id="gaugeArc" cx="100" cy="100" r="86" fill="none" stroke="#c97c3d" stroke-width="14"
-        stroke-linecap="round" transform="rotate(-90 100 100)"/>
-    </svg>
-    <div class="gauge-pct" id="gaugePct">0%</div>
-    <div class="gauge-label">ACCURACY</div>
+<!-- ── Complete Screen ── -->
+<div class="complete-screen hidden" id="completeScreen">
+  <div class="complete-icon">⚡</div>
+  <div class="complete-heading">Complete</div>
+  <div class="complete-sub" id="completeSub">All cards reviewed.</div>
+  <div class="complete-stats">
+    <div class="cstat"><div class="cstat-num g" id="cKnew">0</div><div class="cstat-label">KNEW IT</div></div>
+    <div class="cstat"><div class="cstat-num r" id="cMissed">0</div><div class="cstat-label">MISSED</div></div>
+    <div class="cstat"><div class="cstat-num" id="cTotal">0</div><div class="cstat-label">CARDS</div></div>
   </div>
-  <h2 id="summaryHeading">Load Balanced</h2>
-  <p class="verdict" id="verdict">Every calculation checked.</p>
-  <div class="summary-stats">
-    <div><div class="num g" id="sumCorrect">0</div><div class="lbl">CORRECT</div></div>
-    <div><div class="num r" id="sumIncorrect">0</div><div class="lbl">MISSED</div></div>
-    <div><div class="num" id="sumTotal">0</div><div class="lbl">QUESTIONS</div></div>
-  </div>
-  <div class="again-row">
-    <button class="again-btn primary" id="againYes">RUN IT AGAIN</button>
-    <button class="again-btn" id="againNo">DONE FOR NOW</button>
-  </div>
+  <button class="home-btn" id="homeBtn">BACK TO MENU</button>
 </div>
 
-<div class="summary" id="quitScreen">
-  <h2>Power Down?</h2>
-  <p class="verdict">You're mid-round &mdash; leaving now ends this session. Progress on the current round won't be saved.</p>
-  <div class="again-row">
-    <button class="again-btn primary" id="quitConfirmYes">YES, QUIT</button>
-    <button class="again-btn" id="quitConfirmNo">KEEP GOING</button>
-  </div>
-</div>
-
-<div class="footer-note">Each question appears once per round &mdash; no repeats.</div>
+<div class="footer-note">Each card appears once per round — no repeats.</div>
 
 <script>
-const QUESTIONS = [{"text": "A capacitor is rated at 120 volts and 20 amps. What are the watts?", "choices": ["a) 2400", "b) 3240", "c) 3000", "d) 4157"], "answer": "b"}, {"text": "A retail store has 32 linear feet of show window. What is the VA?", "choices": ["a) 6400", "b) 6500", "c) 6600", "d) 6700"], "answer": "a"}, {"text": "A restaurant has a 15.5 ft plug strip for all their television systems which are likely to be used at the same time. What is the VA?", "choices": ["a) 2880", "b) 2700", "c) 720", "d) 780"], "answer": "a"}, {"text": "An apartment has 8 water heaters at 800 watts, what is the VA?", "choices": ["a) 4800", "b) 5400", "c) 6400", "d) 7200"], "answer": "a"}, {"text": "A commercial garage has 55 feet of track lighting, what is the VA?", "choices": ["a) 2450", "b) 3480", "c) 4200", "d) 6488"], "answer": "c"}, {"text": "What is the minimum rating for a laundry circuit in a single family dwelling?", "choices": ["a) 20A, 1000 watts", "b) 20A, 1500 watts", "c) 30A, 1000 watts", "d) 30A, 1500 watts"], "answer": "b"}, {"text": "15 feet fo show window requires how many receptacles above window?", "choices": ["a) 1", "b) 2", "c) 3", "d) 4"], "answer": "b"}, {"text": "A conference room is 250 sq ft and has a 12.5 ft wall. How man floor receptacles are needed?", "choices": ["a) 1", "b) 2", "c) 3", "d) 4"], "answer": "b"}, {"text": "General branch circuit lighting load for a hospital shall be calculated at _____VA per square foot.", "choices": ["a) 1.6", "b) 6", "c) 3", "d) 2"], "answer": "a"}, {"text": "The conductors for festoon lighting shall be supported by messenger wire in all spans exceeding?", "choices": ["a) 40 ft", "b) 50 ft", "c) 60 ft", "d) 70 ft"], "answer": "a"}, {"text": "What is the minimum height of a SE conductor going above a pedestrian sidewalk?", "choices": ["a) 10 feet", "b) 15 feet", "c) 20 feet", "d) 25 feet"], "answer": "a"}, {"text": "Jays sporting goods has a 3 phase 1200A service being supplied by (4) 350 kcmil. The parallel conductors are installed in (4) separate runs of PVC. What min size single bonding jumper is needed?", "choices": ["a) 4/0", "b) 250 kcmil", "c) 300 kcmil", "d) 350 kcmil"], "answer": "a"}, {"text": "If you have (2) paralled 300 kcmil conductors installed in separate runs of PVC, what size EGC is needed in each pipe?", "choices": ["a) #1", "b) #2", "c) #3", "d) #4"], "answer": "a"}, {"text": "What is the minimum size copper-clad grounding electrode conductor needed for a 200A single phase dwelling copper feeder?", "choices": ["a) 6 awg", "b) 4 awg", "c) 2 awg", "d) 1/0 awg"], "answer": "c"}, {"text": "Direct burial cable shall be installed how many inches below streets and parking lots?", "choices": ["a) 12", "b) 24", "c) 30", "d) 36"], "answer": "b"}, {"text": "A single-family dwelling has a 200-amp service. What size feeder will be required to supply a 75 amp electric space heater and a 25 amp air conditioner?", "choices": ["a) #2", "b) #3", "c) # 4", "d) #6"], "answer": "a"}, {"text": "What is the expansion rate of 250 feet of PVC that goes from a temperature change of -20 F to 80 F.", "choices": ["a) 2.43", "b) 4.06", "c) 10.15", "d) 11"], "answer": "b"}, {"text": "What is the allowable ampacity of (4) #6 THHN installed in a raceway with and ambient temperature of 50 Celcius?", "choices": ["a) 48", "b) 49", "c) 50", "d) 51"], "answer": "b"}, {"text": "Branch circuits suppling two or more outlets for fixed electrical space heating equipment shall be rated for not over how many amps?", "choices": ["a) 20 amps", "b) 30 amps", "c) 40 amps", "d) 60 amps"], "answer": "b"}, {"text": "Class 1 hazardous locations consist of combustible _________ .", "choices": ["a) dust", "b) fiber", "c) liquid", "d) plastic"], "answer": "c"}, {"text": "Class 2 hazardous locations consist of combustible __________.", "choices": ["a) dust", "b) fiber", "c) liquid", "d) plastic"], "answer": "a"}, {"text": "Class 3 hazardous locations consist of combustible ___________.", "choices": ["a) dust", "b) fiber", "c) liquid", "d) plastic"], "answer": "b"}, {"text": "Liquid propane indoor storage tanks are class _____  division ____ within 5' of tank.", "choices": ["a) class I division I", "b) class I division II", "c) class II division I", "d) class II division II"], "answer": "b"}, {"text": "Places of assembly shall not include?", "choices": ["a) armories", "b) bus stops", "c) greenhouses", "d) pool rooms"], "answer": "c"}, {"text": "The OCPD for fire pump motors shall not open within 2 minutes a _______ of the FLA.", "choices": ["a) 100%", "b) 300%", "c) 400%", "d) 600%"], "answer": "d"}, {"text": "A SPD shall be installed on the ______ side of a fire alarm control panel.", "choices": ["a) line", "b) load", "c) neutral", "d) right"], "answer": "a"}, {"text": "How many #8 THHW, compact conductors can be placed inside 1\" EMT trade size conduit?", "choices": ["a) 2", "b) 4", "c) 6", "d) 8"], "answer": "c"}, {"text": "Whats size RMC pipe is needed for the total square in area (including insulation) of: (4) #8 THHN and (6) #10 THHN wires?", "choices": ["a) 3/4 inch", "b) 1 inch", "c) 2 inch", "d) 2.5 inch"], "answer": "b"}];
+const CARDS = [{"subject": "Conductor Properties", "article": "Chapter 9 Table 8"}, {"subject": "Raceways", "article": "342-392"}, {"subject": "Mobile Homes", "article": "550"}, {"subject": "Switches", "article": "404"}, {"subject": "Commercial Garages", "article": "511"}, {"subject": "Bulk Storage Plants", "article": "515"}, {"subject": "Heath Care Facilities", "article": "517"}, {"subject": "Cable Types", "article": "320-340"}, {"subject": "Fire Resistant Cables", "article": "728"}, {"subject": "Electric Signs", "article": "600"}, {"subject": "Assembly Occupancies", "article": "518"}, {"subject": "Class 4 Circuits", "article": "726"}, {"subject": "Required Standby Systems", "article": "701"}, {"subject": "Aircraft Hangers", "article": "513"}, {"subject": "Surge Arresters", "article": "242 Part III"}, {"subject": "Motor Fuel Dispensing Facility Locations", "article": "514"}, {"subject": "Services", "article": "230"}, {"subject": "Motors", "article": "430"}, {"subject": "Optic Fiber Cables  And Raceways", "article": "770"}, {"subject": "Class 1/Class 2/Class 3  Power Limited Circuits", "article": "724, 725"}, {"subject": "Solar Photovoltaic (PV) Systems", "article": "690"}, {"subject": "Fixed Electric Space  Heating Equipment", "article": "424"}, {"subject": "Overvoltage Protection", "article": "242"}, {"subject": "Generators", "article": "445"}, {"subject": "Panelboards / Switchgear", "article": "408"}, {"subject": "Office Furnishings  (Office Partisans)", "article": "605"}, {"subject": "NFPA Documentation", "article": "500"}, {"subject": "Branch Circuit, Feeder, and  Service Load Calculations", "article": "220"}, {"subject": "Knob and Tube Wiring", "article": "394"}, {"subject": "AC and Refrigerating Equipment", "article": "440"}, {"subject": "Emergency Systems", "article": "700"}, {"subject": "Recreational Vehicles", "article": "551"}, {"subject": "Optional Standby Systems", "article": "702"}, {"subject": "Marinas and Boatyards", "article": "555"}, {"subject": "Edison Based Fuses", "article": "240"}, {"subject": "Required Outlets for Dwellings", "article": "210 Part III"}, {"subject": "Pipe Fill", "article": "Chapter 9  Table 1, Table 4"}, {"subject": "Electric Vehicle Charging Station", "article": "625"}, {"subject": "Grounding and Bonding", "article": "250"}, {"subject": "Surge Protection Devices (SPDS)", "article": "242  Part II"}, {"subject": "Flexible Cords", "article": "400"}, {"subject": "Service/Branch Circuits Over  1000VAC, 1500VDC", "article": "235"}, {"subject": "Fixed Outdoor Electric  Deicing and Snowmelting", "article": "426"}, {"subject": "Fire Pump Motors", "article": "695"}, {"subject": "Spray Application for  Combustible Materials", "article": "516"}, {"subject": "Outside Branch  Circuits/Feeders", "article": "225"}, {"subject": "Tamper-proof Receptacles", "article": "406"}, {"subject": "Transformers", "article": "450"}, {"subject": "Fire Alarm Systems", "article": "760"}, {"subject": "Appliances", "article": "422"}, {"subject": "X-Ray Equipment", "article": "660"}, {"subject": "Medium Voltage (MV)", "article": "315"}, {"subject": "Swimming Pools", "article": "680"}, {"subject": "Overcurrent Protection", "article": "240"}, {"subject": "Hazardous Locations", "article": "500"}, {"subject": "Buseways", "article": "368"}, {"subject": "Capacitors", "article": "460"}, {"subject": "Electric Welders", "article": "630"}, {"subject": "General Requirements for Wiring  And Materials over 1000VAC, 1500VDC", "article": "305"}, {"subject": "Low Voltage Suspending PDS  (Power Down Suspension)", "article": "393"}, {"subject": "Small Wind Electric (Turbine)  Systems", "article": "694"}, {"subject": "Working Space Clearances", "article": "110"}, {"subject": "Luminaries, Lamp Holders,  And Lamps", "article": "410"}, {"subject": "Fixture Wires", "article": "402"}, {"subject": "Circuit Breakers", "article": "240  Part VII"}];
 
+let mode = 'subjects';
 let order = [];
-let posInOrder = 0;
-let results = []; // per original-order index: {done:bool}
-let correctCount = 0;
-let incorrectCount = 0; // total wrong answers this round
+let pos = 0;
+let knewCount = 0;
+let missedCount = 0;
+let isFlipped = false;
 
-const qnumEl = document.getElementById('qnum');
-const qtextEl = document.getElementById('qtext');
-const choicesEl = document.getElementById('choices');
-const feedbackEl = document.getElementById('feedback');
-const nextBtn = document.getElementById('nextBtn');
+const topbar = document.getElementById('topbar');
+const titleScreen = document.getElementById('titleScreen');
+const cardScreen = document.getElementById('cardScreen');
+const completeScreen = document.getElementById('completeScreen');
+const modeTag = document.getElementById('modeTag');
 const breakerRow = document.getElementById('breakerRow');
-const statCorrect = document.getElementById('statCorrect');
-const statIncorrect = document.getElementById('statIncorrect');
-const statRemaining = document.getElementById('statRemaining');
-const quizScreen = document.getElementById('quizScreen');
-const summaryScreen = document.getElementById('summaryScreen');
+const statKnew = document.getElementById('statKnew');
+const statMissed = document.getElementById('statMissed');
+const statLeft = document.getElementById('statLeft');
+const cardNum = document.getElementById('cardNum');
+const cardTypeLabel = document.getElementById('cardTypeLabel');
+const flipContainer = document.getElementById('flipContainer');
+const flipCard = document.getElementById('flipCard');
+const frontText = document.getElementById('frontText');
+const backText = document.getElementById('backText');
+const cardActions = document.getElementById('cardActions');
+
+document.getElementById('titleCount').textContent = CARDS.length + ' cards in the deck';
 
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
+    const j=Math.floor(Math.random()*(i+1));
     [arr[i],arr[j]]=[arr[j],arr[i]];
   }
   return arr;
 }
 
-function startRound(){
-  order = shuffle(QUESTIONS.map((_,i)=>i));
-  posInOrder = 0;
-  correctCount = 0;
-  incorrectCount = 0;
-  buildBreakerRow();
-  quizScreen.style.display='flex';
-  quizScreen.style.flexDirection='column';
-  summaryScreen.classList.remove('show');
-  renderQuestion();
+function showScreen(name){
+  titleScreen.classList.toggle('hidden', name!=='title');
+  cardScreen.classList.toggle('hidden', name!=='card');
+  completeScreen.classList.toggle('hidden', name!=='complete');
+  topbar.classList.toggle('hidden', name==='title');
+}
+
+function startRound(m){
+  mode = m;
+  order = shuffle(CARDS.map((_,i)=>i));
+  pos = 0;
+  knewCount = 0;
+  missedCount = 0;
+  modeTag.textContent = mode.toUpperCase();
+  buildBreakers();
+  showScreen('card');
+  renderCard();
   updateStats();
 }
 
-function buildBreakerRow(){
+function buildBreakers(){
   breakerRow.innerHTML='';
   for(let i=0;i<order.length;i++){
     const d=document.createElement('div');
@@ -415,157 +520,118 @@ function updateBreakers(){
   for(let i=0;i<order.length;i++){
     const el=document.getElementById('brk-'+i);
     el.classList.remove('current','done');
-    if(i<posInOrder) el.classList.add('done');
-    else if(i===posInOrder) el.classList.add('current');
+    if(i<pos) el.classList.add('done');
+    else if(i===pos) el.classList.add('current');
   }
 }
 
 function updateStats(){
-  statCorrect.textContent = correctCount;
-  statIncorrect.textContent = incorrectCount;
-  statRemaining.textContent = order.length - posInOrder;
+  statKnew.textContent = knewCount;
+  statMissed.textContent = missedCount;
+  statLeft.textContent = order.length - pos;
 }
 
-function renderQuestion(){
-  const qIndex = order[posInOrder];
-  const q = QUESTIONS[qIndex];
-  qnumEl.textContent = 'QUESTION ' + (posInOrder+1) + ' OF ' + order.length;
-  qtextEl.textContent = q.text;
-  choicesEl.innerHTML='';
-  feedbackEl.textContent='';
-  feedbackEl.className='feedback';
-  nextBtn.classList.remove('show');
+function renderCard(){
+  const c = CARDS[order[pos]];
+  isFlipped = false;
+  flipCard.classList.remove('flipped');
+  cardActions.classList.add('hidden');
+
+  cardNum.textContent = 'CARD ' + (pos+1) + ' OF ' + order.length;
+
+  let showSubjectFirst;
+  if(mode==='subjects') showSubjectFirst = true;
+  else if(mode==='articles') showSubjectFirst = false;
+  else showSubjectFirst = Math.random() < 0.5;
+
+  if(showSubjectFirst){
+    cardTypeLabel.textContent = 'SUBJECT';
+    frontText.textContent = c.subject;
+    backText.textContent = c.article;
+  } else {
+    cardTypeLabel.textContent = 'ARTICLE';
+    frontText.textContent = c.article;
+    backText.textContent = c.subject;
+  }
+
+  // Match back face height to front
+  syncCardHeight();
   updateBreakers();
   updateStats();
-
-  q.choices.forEach((choiceText)=>{
-    const letter = choiceText.trim().charAt(0);
-    const rest = choiceText.trim().slice(2).trim();
-    const btn = document.createElement('button');
-    btn.className='choice-btn';
-    btn.innerHTML = '<span class="letter">'+letter+'</span><span>'+rest+'</span>';
-    btn.onclick = ()=>handleAnswer(letter, q, btn);
-    choicesEl.appendChild(btn);
-  });
 }
+
+function syncCardHeight(){
+  const front = flipCard.querySelector('.flip-front');
+  const back = flipCard.querySelector('.flip-back');
+  // Reset
+  front.style.position = 'relative';
+  back.style.position = 'relative';
+  front.style.height = 'auto';
+  back.style.height = 'auto';
+  const h = Math.max(front.offsetHeight, back.offsetHeight);
+  front.style.height = h + 'px';
+  back.style.height = h + 'px';
+  front.style.position = 'absolute';
+  back.style.position = 'absolute';
+  flipCard.style.height = h + 'px';
+}
+
+flipContainer.addEventListener('click', function(){
+  if(isFlipped) return;
+  isFlipped = true;
+  flipCard.classList.add('flipped');
+  cardActions.classList.remove('hidden');
+});
+
+document.getElementById('btnKnew').addEventListener('click', function(){
+  knewCount++;
+  advance();
+});
+
+document.getElementById('btnMissed').addEventListener('click', function(){
+  missedCount++;
+  advance();
+});
 
 function advance(){
-  posInOrder++;
+  pos++;
   updateStats();
-  if(posInOrder >= order.length){
-    showSummary(false);
+  if(pos >= order.length){
+    showComplete();
   } else {
-    renderQuestion();
+    renderCard();
   }
 }
 
-function handleAnswer(letter, q, btnEl){
-  const buttons = choicesEl.querySelectorAll('.choice-btn');
-  buttons.forEach(b=>b.disabled=true);
-
-  if(letter === q.answer){
-    btnEl.classList.add('correct');
-    feedbackEl.textContent = pickLine(CORRECT_LINES);
-    feedbackEl.className = 'feedback correct';
-    correctCount++;
+function showComplete(){
+  showScreen('complete');
+  document.getElementById('cKnew').textContent = knewCount;
+  document.getElementById('cMissed').textContent = missedCount;
+  document.getElementById('cTotal').textContent = knewCount + missedCount;
+  const sub = document.getElementById('completeSub');
+  if(knewCount === order.length){
+    sub.textContent = 'Perfect round — every card nailed.';
+  } else if(knewCount >= order.length * 0.8){
+    sub.textContent = 'Strong run. A few to brush up on.';
   } else {
-    btnEl.classList.add('incorrect');
-    buttons.forEach(b=>{
-      const l = b.querySelector('.letter').textContent;
-      if(l === q.answer) b.classList.add('correct');
-    });
-    feedbackEl.textContent = pickLine(INCORRECT_LINES);
-    feedbackEl.className = 'feedback incorrect';
-    incorrectCount++;
-  }
-
-  nextBtn.textContent = 'NEXT QUESTION \u2192';
-  nextBtn.classList.add('show');
-  nextBtn.onclick = advance;
-  updateStats();
-}
-
-const CORRECT_LINES = [
-  "Correct! That math checks out.",
-  "Correct! Load's balanced on that one.",
-  "Correct! Numbers don't lie, and neither did you.",
-  "Correct! Right on the meter.",
-  "Correct! That one adds up."
-];
-const INCORRECT_LINES = [
-  "Incorrect. Numbers didn't add up there.",
-  "Incorrect. Off the meter on that one.",
-  "Incorrect. Noted, moving to the next calc.",
-  "Incorrect. File that formula away for next time.",
-  "Incorrect. Recalculate and keep moving."
-];
-function pickLine(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-
-function showSummary(endedEarly){
-  quizScreen.style.display='none';
-  document.getElementById('quitScreen').classList.remove('show');
-  summaryScreen.classList.add('show');
-
-  const answered = correctCount + incorrectCount;
-  const pct = answered>0 ? Math.round((correctCount/answered)*1000)/10 : 0;
-
-  document.getElementById('sumCorrect').textContent = correctCount;
-  document.getElementById('sumIncorrect').textContent = incorrectCount;
-  document.getElementById('sumTotal').textContent = answered;
-  document.getElementById('gaugePct').textContent = pct + '%';
-
-  const circumference = 2 * Math.PI * 86;
-  const arc = document.getElementById('gaugeArc');
-  arc.style.strokeDasharray = circumference;
-  arc.style.strokeDashoffset = circumference * (1 - pct/100);
-  arc.style.transition = 'stroke-dashoffset 0.8s ease';
-
-  const heading = document.getElementById('summaryHeading');
-  const verdict = document.getElementById('verdict');
-
-  if(endedEarly){
-    heading.textContent = 'Session Ended';
-    verdict.textContent = 'Wrapped up after ' + answered + ' of ' + order.length + ' questions. Pick back up anytime.';
-    arc.style.stroke = 'var(--copper)';
-  } else if(pct>=90){
-    heading.textContent = 'Load Balanced';
-    verdict.textContent = 'That\u2019s master-level load calc work.';
-    arc.style.stroke = 'var(--circuit-green)';
-  } else if(pct>=70){
-    heading.textContent = 'Load Balanced';
-    verdict.textContent = "Solid work \u2014 a little more practice and these numbers will be second nature.";
-    arc.style.stroke = 'var(--amber)';
-  } else {
-    heading.textContent = 'Load Balanced';
-    verdict.textContent = 'Keep at it \u2014 load calcs get easier with repetition.';
-    arc.style.stroke = 'var(--fault-red)';
+    sub.textContent = 'Keep at it — repetition is the circuit to mastery.';
   }
 }
 
-document.getElementById('againYes').onclick = startRound;
-document.getElementById('againNo').onclick = ()=>{
-  summaryScreen.innerHTML = '<div style="font-family:\'SF Mono\',Consolas,monospace;color:var(--insulation-dim);text-align:center;padding:40px;">Session closed.<br>Reopen the app anytime to run it again.</div>';
-};
+document.getElementById('homeBtn').addEventListener('click', function(){
+  showScreen('title');
+});
 
-document.getElementById('quitBtn').onclick = ()=>{
-  quizScreen.style.display='none';
-  document.getElementById('quitScreen').classList.add('show');
-};
-document.getElementById('quitConfirmNo').onclick = ()=>{
-  document.getElementById('quitScreen').classList.remove('show');
-  quizScreen.style.display='flex';
-};
-document.getElementById('quitConfirmYes').onclick = ()=>{
-  showSummary(true);
-};
+document.getElementById('quitBtn').addEventListener('click', function(){
+  showScreen('title');
+});
 
+// Service worker
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
     navigator.serviceWorker.register('sw.js').catch(()=>{});
   });
 }
-
-startRound();
 </script>
 </body>
 </html>

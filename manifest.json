@@ -1,6 +1,6 @@
 {
-  "name": "Load Calc Drill - VA & Load Calculations",
-  "short_name": "Load Calc",
+  "name": "Articles in a Flash",
+  "short_name": "Articles",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#12181A",

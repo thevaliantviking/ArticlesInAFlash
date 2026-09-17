@@ -596,10 +596,13 @@ document.getElementById('btnMissed').addEventListener('click', function(){
 function advance(){
   pos++;
   updateStats();
+  // Hide buttons and flip back first, then load next card after animation completes
+  cardActions.classList.add('hidden');
+  flipCard.classList.remove('flipped');
   if(pos >= order.length){
-    showComplete();
+    setTimeout(showComplete, 520);
   } else {
-    renderCard();
+    setTimeout(renderCard, 520);
   }
 }
 

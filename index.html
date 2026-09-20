@@ -266,6 +266,7 @@
   .flip-back .flip-hint{
     color:var(--insulation-dim);
   }
+  .flip-back.tappable:hover{ opacity:0.9; }
 
   .card-actions{
     display:flex;
@@ -285,16 +286,76 @@
     transition: transform 0.08s ease;
   }
   .card-action-btn:active{ transform:scale(0.97); }
-  .btn-knew{
-    background:var(--circuit-green);
-    color:#1B1F1D;
-    border:none;
-  }
   .btn-missed{
     background:var(--fault-red);
     color:#fff;
     border:none;
   }
+
+  /* ── Quit Screen ── */
+  .quit-screen{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:30px 24px;
+  }
+  .quit-screen.hidden{ display:none; }
+  .quit-heading{
+    font-family:"Arial Black",Impact,"Segoe UI",sans-serif;
+    font-weight:900;
+    font-size:24px;
+    letter-spacing:1px;
+    color:var(--insulation);
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .quit-sub{
+    font-family:"SF Mono",Consolas,monospace;
+    font-size:12px;
+    color:var(--insulation-dim);
+    margin-bottom:24px;
+    line-height:1.5;
+  }
+  .quit-btn-row{
+    display:flex;
+    gap:10px;
+    width:100%;
+    max-width:320px;
+    margin-top:10px;
+  }
+  .btn-resume{
+    flex:1;
+    background:var(--card-bg);
+    border:1px solid var(--copper);
+    color:var(--copper-bright);
+    border-radius:8px;
+    padding:14px 12px;
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:0.5px;
+    cursor:pointer;
+    font-family:inherit;
+    transition: transform 0.08s ease;
+  }
+  .btn-resume:active{ transform:scale(0.97); }
+  .btn-quit-confirm{
+    flex:1;
+    background:var(--fault-red);
+    border:none;
+    color:#fff;
+    border-radius:8px;
+    padding:14px 12px;
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:0.5px;
+    cursor:pointer;
+    font-family:inherit;
+    transition: transform 0.08s ease;
+  }
+  .btn-quit-confirm:active{ transform:scale(0.97); }
 
   /* ── Complete Screen ── */
   .complete-screen{
@@ -424,15 +485,30 @@
       </div>
       <div class="flip-face flip-back">
         <div class="flip-text" id="backText">...</div>
-        <div class="flip-hint">DID YOU KNOW IT?</div>
+        <div class="flip-hint">TAP ANSWER TO CONTINUE · OR MARK MISSED</div>
       </div>
     </div>
   </div>
   <div class="card-actions hidden" id="cardActions">
-    <button class="card-action-btn btn-knew" id="btnKnew">KNEW IT</button>
     <button class="card-action-btn btn-missed" id="btnMissed">MISSED IT</button>
   </div>
 </main>
+
+<!-- ── Quit Screen ── -->
+<div class="quit-screen hidden" id="quitScreen">
+  <div class="complete-icon">⚡</div>
+  <div class="quit-heading">Session Summary</div>
+  <div class="quit-sub">Here's how far you got.</div>
+  <div class="complete-stats">
+    <div class="cstat"><div class="cstat-num g" id="qKnew">0</div><div class="cstat-label">KNEW IT</div></div>
+    <div class="cstat"><div class="cstat-num r" id="qMissed">0</div><div class="cstat-label">MISSED</div></div>
+    <div class="cstat"><div class="cstat-num" id="qDone">0</div><div class="cstat-label">OF <span id="qTotal">0</span></div></div>
+  </div>
+  <div class="quit-btn-row">
+    <button class="btn-resume" id="resumeBtn">RESUME</button>
+    <button class="btn-quit-confirm" id="quitConfirmBtn">QUIT TO MENU</button>
+  </div>
+</div>
 
 <!-- ── Complete Screen ── -->
 <div class="complete-screen hidden" id="completeScreen">
@@ -490,6 +566,7 @@ function showScreen(name){
   titleScreen.classList.toggle('hidden', name!=='title');
   cardScreen.classList.toggle('hidden', name!=='card');
   completeScreen.classList.toggle('hidden', name!=='complete');
+  document.getElementById('quitScreen').classList.toggle('hidden', name!=='quit');
   topbar.classList.toggle('hidden', name==='title');
 }
 
@@ -577,18 +654,20 @@ function syncCardHeight(){
 }
 
 flipContainer.addEventListener('click', function(){
-  if(isFlipped) return;
-  isFlipped = true;
-  flipCard.classList.add('flipped');
-  cardActions.classList.remove('hidden');
+  if(!isFlipped){
+    // First tap: flip to reveal answer
+    isFlipped = true;
+    flipCard.classList.add('flipped');
+    cardActions.classList.remove('hidden');
+  } else {
+    // Tap on the revealed answer = Knew It
+    knewCount++;
+    advance();
+  }
 });
 
-document.getElementById('btnKnew').addEventListener('click', function(){
-  knewCount++;
-  advance();
-});
-
-document.getElementById('btnMissed').addEventListener('click', function(){
+document.getElementById('btnMissed').addEventListener('click', function(e){
+  e.stopPropagation(); // don't also fire the flip container click
   missedCount++;
   advance();
 });
@@ -596,7 +675,7 @@ document.getElementById('btnMissed').addEventListener('click', function(){
 function advance(){
   pos++;
   updateStats();
-  // Hide buttons and flip back first, then load next card after animation completes
+  // Hide button and flip back first, then load next card after animation
   cardActions.classList.add('hidden');
   flipCard.classList.remove('flipped');
   if(pos >= order.length){
@@ -626,6 +705,18 @@ document.getElementById('homeBtn').addEventListener('click', function(){
 });
 
 document.getElementById('quitBtn').addEventListener('click', function(){
+  document.getElementById('qKnew').textContent = knewCount;
+  document.getElementById('qMissed').textContent = missedCount;
+  document.getElementById('qDone').textContent = knewCount + missedCount;
+  document.getElementById('qTotal').textContent = order.length;
+  showScreen('quit');
+});
+
+document.getElementById('resumeBtn').addEventListener('click', function(){
+  showScreen('card');
+});
+
+document.getElementById('quitConfirmBtn').addEventListener('click', function(){
   showScreen('title');
 });
 

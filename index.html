@@ -3,9 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Articles in a Flash</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1B1F1D">
+<meta name="theme-color" content="#15181a">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
   :root{
@@ -34,6 +37,7 @@
     display:flex;
     flex-direction:column;
     min-height:100vh;
+    min-height:100dvh;
     background-image:
       radial-gradient(circle at 10% 0%, rgba(201,124,61,0.06), transparent 40%),
       radial-gradient(circle at 90% 100%, rgba(91,140,90,0.05), transparent 40%);
@@ -61,7 +65,7 @@
   .brand h1{
     font-family:"Arial Black",Impact,"Segoe UI",sans-serif;
     font-weight:900;
-    font-size:20px;
+    font-size:18px;
     letter-spacing:1.5px;
     margin:0;
     color:var(--copper-bright);
@@ -69,7 +73,7 @@
   }
   .brand .tag{
     font-family:"SF Mono",Consolas,monospace;
-    font-size:11px;
+    font-size:10px;
     color:var(--insulation-dim);
     letter-spacing:1px;
   }
@@ -129,7 +133,7 @@
   .title-logo{
     font-family:"Arial Black",Impact,"Segoe UI",sans-serif;
     font-weight:900;
-    font-size:32px;
+    font-size:28px;
     letter-spacing:2px;
     color:var(--copper-bright);
     text-transform:uppercase;
@@ -137,17 +141,17 @@
   }
   .title-sub{
     font-family:"SF Mono",Consolas,monospace;
-    font-size:12px;
+    font-size:11px;
     color:var(--insulation-dim);
     letter-spacing:1.5px;
-    margin-bottom:40px;
+    margin-bottom:28px;
   }
   .mode-label{
     font-family:"SF Mono",Consolas,monospace;
     font-size:11px;
     color:var(--copper);
     letter-spacing:1.5px;
-    margin-bottom:14px;
+    margin-bottom:12px;
   }
   .mode-btn{
     display:block;
@@ -156,26 +160,49 @@
     background:var(--card-bg);
     border:1px solid var(--line);
     border-radius:10px;
-    padding:16px 20px;
+    padding:14px 20px;
     color:var(--insulation);
-    font-size:17px;
+    font-size:16px;
     font-weight:600;
     font-family:inherit;
     cursor:pointer;
     margin-bottom:10px;
     transition: border-color 0.15s ease, background 0.15s ease, transform 0.08s ease;
+    text-align:left;
   }
   .mode-btn:active{ transform:scale(0.97); }
   .mode-btn:hover{ border-color:var(--copper); }
+  .mode-btn.deck-btn{
+    border-color:var(--line);
+    font-size:17px;
+  }
+  .mode-btn.deck-btn.active{
+    border-color:var(--copper);
+    background:var(--card-bg-2);
+  }
   .mode-hint{
     font-family:"SF Mono",Consolas,monospace;
     font-size:10px;
     color:var(--insulation-dim);
-    margin-top:2px;
+    margin-top:4px;
     font-weight:400;
   }
+  .deck-count{
+    font-family:"SF Mono",Consolas,monospace;
+    font-size:10px;
+    color:var(--copper);
+    margin-top:3px;
+    font-weight:400;
+  }
+  .divider{
+    width:100%;
+    max-width:300px;
+    height:1px;
+    background:var(--line);
+    margin:8px 0 16px 0;
+  }
   .title-count{
-    margin-top:30px;
+    margin-top:16px;
     font-family:"SF Mono",Consolas,monospace;
     font-size:11px;
     color:var(--insulation-dim);
@@ -208,7 +235,6 @@
     margin-bottom:8px;
   }
 
-  /* Flip card container */
   .flip-container{
     perspective:800px;
     margin-bottom:20px;
@@ -263,10 +289,6 @@
     color:var(--insulation-dim);
     margin-top:14px;
   }
-  .flip-back .flip-hint{
-    color:var(--insulation-dim);
-  }
-  .flip-back.tappable:hover{ opacity:0.9; }
 
   .card-actions{
     display:flex;
@@ -368,10 +390,7 @@
     padding:30px 24px;
   }
   .complete-screen.hidden{ display:none; }
-  .complete-icon{
-    font-size:56px;
-    margin-bottom:12px;
-  }
+  .complete-icon{ font-size:56px; margin-bottom:12px; }
   .complete-heading{
     font-family:"Arial Black",Impact,"Segoe UI",sans-serif;
     font-weight:900;
@@ -393,9 +412,7 @@
     gap:24px;
     margin:24px 0 30px 0;
   }
-  .cstat{
-    text-align:center;
-  }
+  .cstat{ text-align:center; }
   .cstat-num{
     font-family:"SF Mono",Consolas,monospace;
     font-size:28px;
@@ -436,7 +453,7 @@
 </head>
 <body>
 
-<!-- ── Topbar (hidden on title) ── -->
+<!-- ── Topbar ── -->
 <div class="topbar hidden" id="topbar">
   <div class="brand">
     <div class="brand-left">
@@ -456,21 +473,33 @@
 <!-- ── Title Screen ── -->
 <div class="title-screen" id="titleScreen">
   <div class="title-logo">Articles in a Flash</div>
-  <div class="title-sub">NEC ARTICLE FLASHCARDS</div>
+  <div class="title-sub">NEC FLASHCARDS</div>
+
+  <div class="mode-label">SELECT DECK</div>
+  <button class="mode-btn deck-btn active" id="deckArticles" onclick="selectDeck('articles')">
+    Articles
+    <div class="deck-count" id="articlesCount"></div>
+  </button>
+  <button class="mode-btn deck-btn" id="deckTables" onclick="selectDeck('tables')">
+    Tables
+    <div class="deck-count" id="tablesCount"></div>
+  </button>
+
+  <div class="divider"></div>
+
   <div class="mode-label">SELECT MODE</div>
   <button class="mode-btn" onclick="startRound('subjects')">
     Subjects
-    <div class="mode-hint">See the subject — name the article</div>
+    <div class="mode-hint">See the subject — name the reference</div>
   </button>
-  <button class="mode-btn" onclick="startRound('articles')">
-    Articles
-    <div class="mode-hint">See the article — name the subject</div>
+  <button class="mode-btn" onclick="startRound('references')">
+    References
+    <div class="mode-hint">See the reference — name the subject</div>
   </button>
   <button class="mode-btn" onclick="startRound('mixed')">
     Mixed
     <div class="mode-hint">Random side shown first</div>
   </button>
-  <div class="title-count" id="titleCount"></div>
 </div>
 
 <!-- ── Flashcard Screen ── -->
@@ -526,8 +555,13 @@
 <div class="footer-note">Each card appears once per round — no repeats.</div>
 
 <script>
-const CARDS = [{"subject": "Conductor Properties", "article": "Chapter 9 Table 8"}, {"subject": "Raceways", "article": "342-392"}, {"subject": "Mobile Homes", "article": "550"}, {"subject": "Switches", "article": "404"}, {"subject": "Commercial Garages", "article": "511"}, {"subject": "Bulk Storage Plants", "article": "515"}, {"subject": "Heath Care Facilities", "article": "517"}, {"subject": "Cable Types", "article": "320-340"}, {"subject": "Fire Resistant Cables", "article": "728"}, {"subject": "Electric Signs", "article": "600"}, {"subject": "Assembly Occupancies", "article": "518"}, {"subject": "Class 4 Circuits", "article": "726"}, {"subject": "Required Standby Systems", "article": "701"}, {"subject": "Aircraft Hangers", "article": "513"}, {"subject": "Surge Arresters", "article": "242 Part III"}, {"subject": "Motor Fuel Dispensing Facility Locations", "article": "514"}, {"subject": "Services", "article": "230"}, {"subject": "Motors", "article": "430"}, {"subject": "Optic Fiber Cables  And Raceways", "article": "770"}, {"subject": "Class 1/Class 2/Class 3  Power Limited Circuits", "article": "724, 725"}, {"subject": "Solar Photovoltaic (PV) Systems", "article": "690"}, {"subject": "Fixed Electric Space  Heating Equipment", "article": "424"}, {"subject": "Overvoltage Protection", "article": "242"}, {"subject": "Generators", "article": "445"}, {"subject": "Panelboards / Switchgear", "article": "408"}, {"subject": "Office Furnishings  (Office Partisans)", "article": "605"}, {"subject": "NFPA Documentation", "article": "500"}, {"subject": "Branch Circuit, Feeder, and  Service Load Calculations", "article": "220"}, {"subject": "Knob and Tube Wiring", "article": "394"}, {"subject": "AC and Refrigerating Equipment", "article": "440"}, {"subject": "Emergency Systems", "article": "700"}, {"subject": "Recreational Vehicles", "article": "551"}, {"subject": "Optional Standby Systems", "article": "702"}, {"subject": "Marinas and Boatyards", "article": "555"}, {"subject": "Edison Based Fuses", "article": "240"}, {"subject": "Required Outlets for Dwellings", "article": "210 Part III"}, {"subject": "Pipe Fill", "article": "Chapter 9  Table 1, Table 4"}, {"subject": "Electric Vehicle Charging Station", "article": "625"}, {"subject": "Grounding and Bonding", "article": "250"}, {"subject": "Surge Protection Devices (SPDS)", "article": "242  Part II"}, {"subject": "Flexible Cords", "article": "400"}, {"subject": "Service/Branch Circuits Over  1000VAC, 1500VDC", "article": "235"}, {"subject": "Fixed Outdoor Electric  Deicing and Snowmelting", "article": "426"}, {"subject": "Fire Pump Motors", "article": "695"}, {"subject": "Spray Application for  Combustible Materials", "article": "516"}, {"subject": "Outside Branch  Circuits/Feeders", "article": "225"}, {"subject": "Tamper-proof Receptacles", "article": "406"}, {"subject": "Transformers", "article": "450"}, {"subject": "Fire Alarm Systems", "article": "760"}, {"subject": "Appliances", "article": "422"}, {"subject": "X-Ray Equipment", "article": "660"}, {"subject": "Medium Voltage (MV)", "article": "315"}, {"subject": "Swimming Pools", "article": "680"}, {"subject": "Overcurrent Protection", "article": "240"}, {"subject": "Hazardous Locations", "article": "500"}, {"subject": "Buseways", "article": "368"}, {"subject": "Capacitors", "article": "460"}, {"subject": "Electric Welders", "article": "630"}, {"subject": "General Requirements for Wiring  And Materials over 1000VAC, 1500VDC", "article": "305"}, {"subject": "Low Voltage Suspending PDS  (Power Down Suspension)", "article": "393"}, {"subject": "Small Wind Electric (Turbine)  Systems", "article": "694"}, {"subject": "Working Space Clearances", "article": "110"}, {"subject": "Luminaries, Lamp Holders,  And Lamps", "article": "410"}, {"subject": "Fixture Wires", "article": "402"}, {"subject": "Circuit Breakers", "article": "240  Part VII"}];
+const DECKS = {
+  articles: [{"subject":"Conductor Properties","article":"Chapter 9 Table 8"},{"subject":"Raceways","article":"342-392"},{"subject":"Mobile Homes","article":"550"},{"subject":"Switches","article":"404"},{"subject":"Commercial Garages","article":"511"},{"subject":"Bulk Storage Plants","article":"515"},{"subject":"Heath Care Facilities","article":"517"},{"subject":"Cable Types","article":"320-340"},{"subject":"Fire Resistant Cables","article":"728"},{"subject":"Electric Signs","article":"600"},{"subject":"Assembly Occupancies","article":"518"},{"subject":"Class 4 Circuits","article":"726"},{"subject":"Required Standby Systems","article":"701"},{"subject":"Aircraft Hangers","article":"513"},{"subject":"Surge Arresters","article":"242 Part III"},{"subject":"Motor Fuel Dispensing Facility Locations","article":"514"},{"subject":"Services","article":"230"},{"subject":"Motors","article":"430"},{"subject":"Optic Fiber Cables  And Raceways","article":"770"},{"subject":"Class 1/Class 2/Class 3  Power Limited Circuits","article":"724, 725"},{"subject":"Solar Photovoltaic (PV) Systems","article":"690"},{"subject":"Fixed Electric Space  Heating Equipment","article":"424"},{"subject":"Overvoltage Protection","article":"242"},{"subject":"Generators","article":"445"},{"subject":"Panelboards / Switchgear","article":"408"},{"subject":"Office Furnishings  (Office Partisans)","article":"605"},{"subject":"NFPA Documentation","article":"500"},{"subject":"Branch Circuit, Feeder, and  Service Load Calculations","article":"220"},{"subject":"Knob and Tube Wiring","article":"394"},{"subject":"AC and Refrigerating Equipment","article":"440"},{"subject":"Emergency Systems","article":"700"},{"subject":"Recreational Vehicles","article":"551"},{"subject":"Optional Standby Systems","article":"702"},{"subject":"Marinas and Boatyards","article":"555"},{"subject":"Edison Based Fuses","article":"240"},{"subject":"Required Outlets for Dwellings","article":"210 Part III"},{"subject":"Pipe Fill","article":"Chapter 9  Table 1, Table 4"},{"subject":"Electric Vehicle Charging Station","article":"625"},{"subject":"Grounding and Bonding","article":"250"},{"subject":"Surge Protection Devices (SPDS)","article":"242  Part II"},{"subject":"Flexible Cords","article":"400"},{"subject":"Service/Branch Circuits Over  1000VAC, 1500VDC","article":"235"},{"subject":"Fixed Outdoor Electric  Deicing and Snowmelting","article":"426"},{"subject":"Fire Pump Motors","article":"695"},{"subject":"Spray Application for  Combustible Materials","article":"516"},{"subject":"Outside Branch  Circuits/Feeders","article":"225"},{"subject":"Tamper-proof Receptacles","article":"406"},{"subject":"Transformers","article":"450"},{"subject":"Fire Alarm Systems","article":"760"},{"subject":"Appliances","article":"422"},{"subject":"X-Ray Equipment","article":"660"},{"subject":"Medium Voltage (MV)","article":"315"},{"subject":"Swimming Pools","article":"680"},{"subject":"Overcurrent Protection","article":"240"},{"subject":"Hazardous Locations","article":"500"},{"subject":"Buseways","article":"368"},{"subject":"Capacitors","article":"460"},{"subject":"Electric Welders","article":"630"},{"subject":"General Requirements for Wiring  And Materials over 1000VAC, 1500VDC","article":"305"},{"subject":"Low Voltage Suspending PDS  (Power Down Suspension)","article":"393"},{"subject":"Small Wind Electric (Turbine)  Systems","article":"694"},{"subject":"Working Space Clearances","article":"110"},{"subject":"Luminaries, Lamp Holders,  And Lamps","article":"410"},{"subject":"Fixture Wires","article":"402"},{"subject":"Circuit Breakers","article":"240  Part VII"}],
+  tables: [{"subject":"Ambient temperature correction factors based on 30 C","article":"310.15(B)(1)(1)"},{"subject":"Ampacity Tables","article":"310.16"},{"subject":"General Lighting Loads Non-dwelling","article":"220.42(A)"},{"subject":"Standard Ampere Ratings for Fuses","article":"240.6(A)"},{"subject":"Classification of Maximum Surface Temperature","article":"500.8(C)(4)"},{"subject":"Conductor Properties","article":"Chapter 9, Table 8"},{"subject":"Electrical Area Classification","article":"515.3"},{"subject":"Motor Fuel Dispensing Facility","article":"514.3(B)(1)"},{"subject":"Metal Boxes","article":"314.16(A)"},{"subject":"Conduit and Tubing Fill Tables (Same Size/Type)","article":"Chapter 9, Annex C"},{"subject":"Grounding Electrode Conductor","article":"250.66"},{"subject":"Equipment Grounding Conductors","article":"250.122"},{"subject":"Minimum Cover Requirements","article":"300.5(A)"},{"subject":"Enclosure Selection (Rating)","article":"110.28"},{"subject":"Single Phase Dwellings Services and Feeders","article":"310.12(A)"},{"subject":"Volume Allowance Required per Conductor","article":"314.16(B)(1)"},{"subject":"Dimensions of Insulated Wires","article":"Chapter 9, Table 5"},{"subject":"Grounded Conductor / Main Bonding Jumper","article":"250.102(C)(1)"},{"subject":"Minimum Depth of Clear Working Space at Electrical Equipment","article":"110.34(A)"},{"subject":"Dimensions and Percent Area of Conduit","article":"Chapter 9, Table 4"},{"subject":"Motor Tables","article":"430.248-430.250"},{"subject":"Overcurrent Protection Percentages for FLC","article":"430.52(C)(1)"},{"subject":"Locked Rotor Indicating Code Letters","article":"430.7(B)"},{"subject":"Duty Cycle Service","article":"430.22(E)"}]
+};
 
+let currentDeck = 'articles';
+let activeDeckData = DECKS.articles;
 let mode = 'subjects';
 let order = [];
 let pos = 0;
@@ -535,6 +569,7 @@ let knewCount = 0;
 let missedCount = 0;
 let isFlipped = false;
 
+// DOM refs
 const topbar = document.getElementById('topbar');
 const titleScreen = document.getElementById('titleScreen');
 const cardScreen = document.getElementById('cardScreen');
@@ -552,7 +587,16 @@ const frontText = document.getElementById('frontText');
 const backText = document.getElementById('backText');
 const cardActions = document.getElementById('cardActions');
 
-document.getElementById('titleCount').textContent = CARDS.length + ' cards in the deck';
+// Init deck counts
+document.getElementById('articlesCount').textContent = DECKS.articles.length + ' cards';
+document.getElementById('tablesCount').textContent = DECKS.tables.length + ' cards';
+
+function selectDeck(deck){
+  currentDeck = deck;
+  activeDeckData = DECKS[deck];
+  document.getElementById('deckArticles').classList.toggle('active', deck === 'articles');
+  document.getElementById('deckTables').classList.toggle('active', deck === 'tables');
+}
 
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
@@ -572,11 +616,13 @@ function showScreen(name){
 
 function startRound(m){
   mode = m;
-  order = shuffle(CARDS.map((_,i)=>i));
+  order = shuffle(activeDeckData.map((_,i)=>i));
   pos = 0;
   knewCount = 0;
   missedCount = 0;
-  modeTag.textContent = mode.toUpperCase();
+  // Show deck name + mode in topbar tag
+  const deckLabel = currentDeck === 'tables' ? 'TABLES' : 'ARTICLES';
+  modeTag.textContent = deckLabel + ' · ' + mode.toUpperCase();
   buildBreakers();
   showScreen('card');
   renderCard();
@@ -609,7 +655,7 @@ function updateStats(){
 }
 
 function renderCard(){
-  const c = CARDS[order[pos]];
+  const c = activeDeckData[order[pos]];
   isFlipped = false;
   flipCard.classList.remove('flipped');
   cardActions.classList.add('hidden');
@@ -618,7 +664,7 @@ function renderCard(){
 
   let showSubjectFirst;
   if(mode==='subjects') showSubjectFirst = true;
-  else if(mode==='articles') showSubjectFirst = false;
+  else if(mode==='references') showSubjectFirst = false;
   else showSubjectFirst = Math.random() < 0.5;
 
   if(showSubjectFirst){
@@ -626,12 +672,11 @@ function renderCard(){
     frontText.textContent = c.subject;
     backText.textContent = c.article;
   } else {
-    cardTypeLabel.textContent = 'ARTICLE';
+    cardTypeLabel.textContent = 'REFERENCE';
     frontText.textContent = c.article;
     backText.textContent = c.subject;
   }
 
-  // Match back face height to front
   syncCardHeight();
   updateBreakers();
   updateStats();
@@ -640,7 +685,6 @@ function renderCard(){
 function syncCardHeight(){
   const front = flipCard.querySelector('.flip-front');
   const back = flipCard.querySelector('.flip-back');
-  // Reset
   front.style.position = 'relative';
   back.style.position = 'relative';
   front.style.height = 'auto';
@@ -655,19 +699,17 @@ function syncCardHeight(){
 
 flipContainer.addEventListener('click', function(){
   if(!isFlipped){
-    // First tap: flip to reveal answer
     isFlipped = true;
     flipCard.classList.add('flipped');
     cardActions.classList.remove('hidden');
   } else {
-    // Tap on the revealed answer = Knew It
     knewCount++;
     advance();
   }
 });
 
 document.getElementById('btnMissed').addEventListener('click', function(e){
-  e.stopPropagation(); // don't also fire the flip container click
+  e.stopPropagation();
   missedCount++;
   advance();
 });
@@ -675,7 +717,6 @@ document.getElementById('btnMissed').addEventListener('click', function(e){
 function advance(){
   pos++;
   updateStats();
-  // Hide button and flip back first, then load next card after animation
   cardActions.classList.add('hidden');
   flipCard.classList.remove('flipped');
   if(pos >= order.length){
@@ -700,9 +741,7 @@ function showComplete(){
   }
 }
 
-document.getElementById('homeBtn').addEventListener('click', function(){
-  showScreen('title');
-});
+document.getElementById('homeBtn').addEventListener('click', () => showScreen('title'));
 
 document.getElementById('quitBtn').addEventListener('click', function(){
   document.getElementById('qKnew').textContent = knewCount;
@@ -712,12 +751,12 @@ document.getElementById('quitBtn').addEventListener('click', function(){
   showScreen('quit');
 });
 
-document.getElementById('resumeBtn').addEventListener('click', function(){
-  showScreen('card');
-});
+document.getElementById('resumeBtn').addEventListener('click', () => showScreen('card'));
+document.getElementById('quitConfirmBtn').addEventListener('click', () => showScreen('title'));
 
-document.getElementById('quitConfirmBtn').addEventListener('click', function(){
-  showScreen('title');
+// Hide address bar on Android Chrome (browser mode, not PWA)
+window.addEventListener('load', () => {
+  setTimeout(() => window.scrollTo(0, 1), 100);
 });
 
 // Service worker
